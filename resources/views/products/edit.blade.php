@@ -37,14 +37,7 @@
                value="{{ old('seller', $product->seller) }}">
         <div class="invalid-feedback" id="error-seller"></div>
     </div>
-
-    {{-- Quantity --}}
-    <div class="mb-3">
-        <label for="quantity" class="form-label fw-semibold">Quantity</label>
-        <input type="number" class="form-control" id="quantity" name="quantity"
-               value="{{ old('quantity', $product->quantity) }}" min="0" required>
-        <div class="invalid-feedback" id="error-quantity"></div>
-    </div>
+ 
 
     {{-- Alert Quantity --}}
     <div class="mb-3">

@@ -1,80 +1,61 @@
-<div class="container mt-4">
-    <h4>Manage Purchases</h4>
+<div class="container">
+    <h3 class="mb-4">All Purchases</h3>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    <a href="{{ route('purchases.create') }}" class="btn btn-primary mb-3 ajax-link" data-url="{{ route('purchases.create') }}">Record New Purchase</a>
 
-    <!-- Add Purchase Form -->
-    <form action="{{ route('purchases.store') }}" method="POST" class="row g-2 mb-4">
-        @csrf
-        <div class="col-md-3">
-            <select name="product_id" class="form-select" required>
-                <option value="">Select Product</option>
-                @foreach($products as $product)
-                    <option value="{{ $product->id }}">{{ $product->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="quantity" class="form-control" placeholder="Qty" required>
-        </div>
-        <div class="col-md-2">
-            <input type="number" step="0.01" name="price" class="form-control" placeholder="Price" required>
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="supplier" class="form-control" placeholder="Supplier">
-        </div>
-        <div class="col-md-2">
-            <input type="date" name="purchase_date" class="form-control" required>
-        </div>
-        <div class="col-md-1">
-            <button class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i></button>
-        </div>
-    </form>
-
-    <!-- Purchase Table -->
-    <table class="table table-bordered">
-        <thead class="table-light">
+    <table class="table table-bordered table-striped">
+        <thead>
             <tr>
+                <th>#</th>
                 <th>Product</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Total</th>
+                <th>Batch</th>
+                <th>Expiry Date</th>
                 <th>Supplier</th>
-                <th>Date</th>
-                <th></th>
+                <th>Quantity</th>
+                <th>Price per Unit (MK)</th>
+                <th>Total Cost (MK)</th>
+                <th>Purchase Date</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-        @foreach($purchases as $purchase)
-            <tr>
+            @foreach($purchases as $purchase)
+            @php
+                $today = \Carbon\Carbon::today();
+                $expiryClass = '';
+                if ($purchase->expiry_date) {
+                    if ($purchase->expiry_date < $today) {
+                        $expiryClass = 'table-danger'; // expired
+                    } elseif ($purchase->expiry_date <= $today->copy()->addDays(30)) {
+                        $expiryClass = 'table-warning'; // expiring soon
+                    }
+                }
+            @endphp
+            <tr class="{{ $expiryClass }}">
+                <td>{{ $purchase->id }}</td>
                 <td>{{ $purchase->product->name ?? 'N/A' }}</td>
+                <td>{{ $purchase->batch_number ?? '-' }}</td>
+                <td>{{ $purchase->expiry_date ? \Carbon\Carbon::parse($purchase->expiry_date)->format('d M Y') : '-' }}</td>
+                <td>{{ $purchase->supplier ?? '-' }}</td>
                 <td>{{ $purchase->quantity }}</td>
-                <td>MK {{ number_format($purchase->price, 2) }}</td>
-                <td>MK {{ number_format($purchase->total_cost, 2) }}</td>
-                <td>{{ $purchase->supplier }}</td>
-                <td>{{ $purchase->purchase_date }}</td>
-                <td class="d-flex gap-2">
-    <button class="btn btn-sm btn-warning ajax-link" 
-            data-url="{{ route('purchases.edit', $purchase->id) }}">
-        <i class="bi bi-pencil"></i> Edit
-    </button>
+                <td>{{ number_format($purchase->price, 2) }}</td>
+                <td>{{ number_format($purchase->total_cost, 2) }}</td>
+                <td>{{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d M Y') }}</td>
+                <td><a href="#" class="btn btn-sm btn-warning ajax-link" 
+   data-url="{{ route('purchases.edit', $purchase->id) }}">
+    Edit
+</a>
 
-    <button class="btn btn-sm btn-info ajax-link" 
-            data-url="{{ route('purchases.show', $purchase->id) }}">
-        <i class="bi bi-eye"></i> View
-    </button>
-
-    <form action="{{ route('purchases.destroy', $purchase->id) }}" method="POST">
-        @csrf @method('DELETE')
-        <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+    <form action="{{ route('purchases.destroy', $purchase->id) }}" 
+          method="POST" class="d-inline delete-form">
+        @csrf
+        @method('DELETE')
+        <button class="btn btn-sm btn-danger">Delete</button>
     </form>
 </td>
 
-
             </tr>
-        @endforeach
+            @endforeach
         </tbody>
     </table>
 </div>

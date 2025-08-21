@@ -154,8 +154,11 @@
 <body>
 
    <nav class="navbar">
-    <h4 class="text-white mb-0">EDUC Pharmacy</h4>
-
+<img src="{{ asset('images/logo.png') }}" 
+     alt="EDUC Logo" 
+     style="height:40px; width:auto;" 
+     class="me-3">
+        
     <!-- Search bar -->
     <input type="search" class="form-control search-input" placeholder="Search..." aria-label="Search" />
 
@@ -198,31 +201,21 @@
         <i class="bi bi-cash-stack"></i> POS
     </a>
 
-    {{-- Sell Section --}}
-    <div class="sidebar-group">
-        <a href="#sellSubmenu" data-bs-toggle="collapse" class="d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-receipt-cutoff"></i> Sell</span>
-            <i class="bi bi-chevron-down small"></i>
-        </a>
-        <div id="sellSubmenu" class="collapse ms-3">
-            <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('sell.index') }}">
-                <i class="bi bi-list-check"></i> All Sales
-            </a>
-            <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('sell.returns') }}">
-                <i class="bi bi-arrow-counterclockwise"></i> Sell Returns
-            </a>
-        </div>
-    </div>
+    <a href="#" class="ajax-link" data-url="{{ route('pos.saleslist') }}">
+        <i class="bi bi-list-check"></i> All Sales
+    </a>
 
-<a href="#" class="ajax-link d-block mt-1" data-url="{{ route('reports.profit-loss') }}">
-    <i class="bi bi-bar-chart-line"></i> Profit / Loss Report
-</a>
-<a href="#" class="ajax-link d-block mt-1" data-url="{{ route('expenses.index') }}">
-    <i class="bi bi-wallet2"></i> List Expenses
-</a>
-<a href="#" class="ajax-link d-block" data-url="{{ route('expenses.create') }}">
-    <i class="bi bi-plus-circle"></i> Add Expense
-</a>
+    <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('reports.profit-loss') }}">
+        <i class="bi bi-bar-chart-line"></i> Profit / Loss Report
+    </a>
+
+    <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('expenses.index') }}">
+        <i class="bi bi-wallet2"></i> List Expenses
+    </a>
+
+    <a href="#" class="ajax-link d-block" data-url="{{ route('expenses.create') }}">
+        <i class="bi bi-plus-circle"></i> Add Expense
+    </a>
 
     <a href="#"><i class="bi bi-exclamation-triangle"></i> Stock Adjustment</a>
     <a href="#"><i class="bi bi-bell"></i> Notifications</a>
@@ -241,6 +234,7 @@
         @csrf
     </form>
 </aside>
+
 
 
 

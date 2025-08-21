@@ -1,68 +1,109 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Sale;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 use App\Models\SaleItem;
 
 class SaleController extends Controller
 {
-    // POS screen
+    // Show POS form
     public function index()
     {
         $products = Product::all();
-        return view('pos.index', compact('products'));
+        return view('Pos.index', compact('products'));
     }
 
-    // Save Sale
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'items' => 'required|array|min:1',
-            'items.*.productId' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric|min:0',
+    // Store a sale
+ 
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'items' => 'required|array|min:1',
+        'items.*.product_id' => 'required|exists:products,id',
+        'items.*.quantity' => 'required|integer|min:1',
+        'items.*.price' => 'required|numeric|min:0',
+        'payment_method' => 'required|string|in:Cash,Advance,Standard Bank,National Bank,Airtel Money,Mpamba',
+    ]);
+
+    $total_amount = 0;
+
+    $sale = Sale::create([
+        'user_id' => Auth::id(),
+        'total_amount' => 0, // temporary, will update after items
+        'sale_date' => now(),
+        'payment_method' => $validated['payment_method'],
+    ]);
+
+    foreach ($validated['items'] as $item) {
+        $product = Product::findOrFail($item['product_id']);
+        $item_total = $item['quantity'] * $item['price'];
+        $total_amount += $item_total;
+
+        SaleItem::create([
+            'sale_id' => $sale->id,
+            'product_id' => $product->id,
+            'quantity' => $item['quantity'],
+            'price' => $item['price'],
+            'total' => $item_total,
         ]);
 
-        $total = 0;
-        foreach ($data['items'] as $item) {
-            $total += $item['quantity'] * $item['price'];
-        }
-
-        $sale = Sale::create(['total_amount' => $total]);
-
-        foreach ($data['items'] as $item) {
-            SaleItem::create([
-                'sale_id' => $sale->id,
-                'product_id' => $item['productId'],
-                'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'subtotal' => $item['quantity'] * $item['price'],
-            ]);
-        }
-
-        return response()->json(['message' => 'Sale completed successfully']);
+        // Reduce stock
+        $product->quantity -= $item['quantity'];
+        if ($product->quantity < 0) $product->quantity = 0;
+        $product->save();
     }
 
-    // View All Sales
-    public function allSales()
-    {
-        $sales = Sale::with('items')->latest()->get();
-        return view('sell.index', compact('sales'));
+    // Update total
+    $sale->update(['total_amount' => $total_amount]);
+
+    return response()->json([
+        'success' => true,
+        'sale_id' => $sale->id,
+    ]);
+}
+
+
+    // Optional: Show receipt for printing
+    public function printReceipt(Sale $sale)
+{
+    $sale->load('items.product', 'user'); // eager load products and cashier
+    return view('Pos.receipt', compact('sale'));
+}
+// In SaleController.php
+public function allSales(Request $request)
+{
+    $query = Sale::with('user')->orderBy('sale_date', 'desc');
+
+    // Filter by date range
+    if ($request->filled('from_date') && $request->filled('to_date')) {
+        $query->whereBetween('sale_date', [
+            $request->from_date . ' 00:00:00',
+            $request->to_date . ' 23:59:59'
+        ]);
     }
 
-    // View Single Sale
-    public function show($id)
-    {
-        $sale = Sale::with('items.product')->findOrFail($id);
-        return view('sell.show', compact('sale'));
+    // Filter by cashier
+    if ($request->filled('cashier_id')) {
+        $query->where('user_id', $request->cashier_id);
     }
 
-    // Return placeholder view
-    public function returns()
-    {
-        $returns = []; // You can add logic later if you track returns
-        return view('sell.returns', compact('returns'));
+    // Filter by payment method
+    if ($request->filled('payment_method')) {
+        $query->where('payment_method', $request->payment_method);
     }
+
+    $sales = $query->get();
+
+    // For cashier filter dropdown
+    $cashiers = \App\Models\User::all();
+
+    return view('Pos.sales_list', compact('sales', 'cashiers'));
+}
+
+
+
 }

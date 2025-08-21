@@ -11,7 +11,7 @@
             <h5 class="card-title mb-3">{{ $product->name }}</h5>
             <p><strong>Category:</strong> {{ $product->category ?? 'N/A' }}</p>
             <p><strong>Quantity:</strong> {{ $product->quantity }}</p>
-            <p><strong>Price:</strong> MK {{ number_format($product->price, 2) }}</p>
+            <p><strong>Price:</strong> MK {{ number_format($product->selling_price, 2) }}</p>
 
             <div class="mt-3 d-flex gap-2">
                 <button class="btn btn-success" onclick="loadContent('{{ route('products.edit', $product->id) }}')">

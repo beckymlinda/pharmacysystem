@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,23 +8,20 @@ class Product extends Model
 {
     use HasFactory;
 
-    // Optional: explicitly define table name if different from model name
-    // protected $table = 'products';
+    protected $fillable = [
+        'name',
+        'category',
+        'quantity',
+        'expiry_date',
+        'order_price',
+        'selling_price',
+        'brand',
+        'seller',
+        'alert_quantity',
+        'purchase_frequency',
+    ];
 
-    /**
-     * The attributes that are mass assignable.
-     */
-   protected $fillable = [
-    'name',
-    'category',
-    'quantity',
-    'price',
-    'expiry_date',
-    'order_price',
-    'selling_price',
-    'brand',
-    'seller',
-    'alert_quantity',
-    'purchase_frequency',
-];
+    protected $casts = [
+        'expiry_date' => 'date',
+    ];
 }

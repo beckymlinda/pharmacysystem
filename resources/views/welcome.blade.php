@@ -146,7 +146,7 @@
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
         <img src="{{ asset('images/logo.png') }}" alt="EDUC Logo">
-        EDUC PHARMACY
+         
       </a>
       <div class="ms-auto d-flex gap-3">
         <a class="nav-link" href="{{ route('login') }}">Login</a>
