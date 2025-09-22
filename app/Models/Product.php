@@ -18,10 +18,21 @@ class Product extends Model
         'brand',
         'seller',
         'alert_quantity',
+        'unit_id',
+        
         'purchase_frequency',
     ];
 
     protected $casts = [
         'expiry_date' => 'date',
     ];
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class);
+    }
+    public function saleItems()
+{
+    return $this->hasMany(SaleItem::class);
+}
+
 }

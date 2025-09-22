@@ -196,28 +196,34 @@
     <a href="#" class="ajax-link" data-url="{{ route('purchases.index') }}">
         <i class="bi bi-cart-plus"></i> Purchases
     </a>
+<!-- POS -->
+<a href="#" class="ajax-link" data-url="{{ route('pos.index') }}">
+    <i class="bi bi-cash-stack"></i> POS
+</a>
+<!-- All Sales -->
+<a href="#" class="ajax-link" data-url="{{ route('sales.page') }}">
+    <i class="bi bi-list-check"></i> All Sales
+</a>
 
-    <a href="#" class="ajax-link" data-url="{{ route('pos.index') }}">
-        <i class="bi bi-cash-stack"></i> POS
-    </a>
 
-    <a href="#" class="ajax-link" data-url="{{ route('pos.saleslist') }}">
-        <i class="bi bi-list-check"></i> All Sales
-    </a>
 
-    <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('reports.profit-loss') }}">
-        <i class="bi bi-bar-chart-line"></i> Profit / Loss Report
-    </a>
 
-    <a href="#" class="ajax-link d-block mt-1" data-url="{{ route('expenses.index') }}">
-        <i class="bi bi-wallet2"></i> List Expenses
-    </a>
+    <a href="#" class="ajax-link" data-url="{{ route('units.index') }}">
+    <i class="bi bi-plus-circle"></i> Add Unit
+</a><a href="#" class="ajax-link d-block mt-1" data-url="{{ route('reports.profit_loss') }}">
+    <i class="bi bi-bar-chart-line"></i> Profit / Loss Report
+</a>
 
-    <a href="#" class="ajax-link d-block" data-url="{{ route('expenses.create') }}">
-        <i class="bi bi-plus-circle"></i> Add Expense
-    </a>
 
-    <a href="#"><i class="bi bi-exclamation-triangle"></i> Stock Adjustment</a>
+<a href="#" class="ajax-link d-block mt-1" data-url="{{ route('expenses.index') }}">
+    <i class="bi bi-wallet2"></i> List Expenses
+</a>
+
+ 
+
+<a href="#" class="ajax-link d-block mt-1" data-url="{{ route('products.adjust-stock') }}">
+    <i class="bi bi-exclamation-triangle"></i> Stock Adjustment
+</a>
     <a href="#"><i class="bi bi-bell"></i> Notifications</a>
     <a href="#"><i class="bi bi-gear"></i> Settings</a>
     <a href="#"><i class="bi bi-people"></i> User Management</a>
@@ -496,6 +502,26 @@ $(document).on('submit', '#edit-purchase-form', function(e) {
     });
 });
 </script>
+<script>
+$(document).on('click', '.ajax-link', function(e) {
+    e.preventDefault();
+    let url = $(this).data('url');
+
+    $('#main-content').html('<div class="text-center p-5">Loading...</div>');
+
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function(response) {
+            $('#main-content').html(response);
+        },
+        error: function(xhr) {
+            $('#main-content').html('<div class="alert alert-danger">Failed to load content.</div>');
+        }
+    });
+});
+</script>
+
 
 </body>
 </html>

@@ -10,12 +10,16 @@ class PurchaseController extends Controller
 {
     /**
      * Show all purchases.
-     */
-    public function index()
-    {
-        $purchases = Purchase::with('product')->latest()->get();
-        return view('purchases.index', compact('purchases'));
-    }
+     */public function index()
+{
+    $purchases = Purchase::with('product')->latest()->get();
+
+    // Total of all purchases
+    $totalPurchases = Purchase::sum('total_cost');
+
+    return view('purchases.index', compact('purchases', 'totalPurchases'));
+}
+
 
     /**
      * Show form to create a purchase.

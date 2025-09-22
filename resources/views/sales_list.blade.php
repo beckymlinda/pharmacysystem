@@ -29,15 +29,16 @@
     <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
-                <th>#</th>
+                <th>Sale ID</th>
                 <th>Date</th>
-                <th>Customer</th>
-                <th>Payment Method</th>
-                <th>Total</th>
+                <th>User</th>
+                <th>Products</th>
+                <th>Payment Methods</th>
+                <th>Total Sale Amount</th>
             </tr>
         </thead>
         <tbody id="salesBody">
-            <tr><td colspan="5" class="text-center">Loading...</td></tr>
+            <tr><td colspan="6" class="text-center">Loading...</td></tr>
         </tbody>
     </table>
 </div>
@@ -47,30 +48,40 @@ document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("filterForm");
     const salesBody = document.getElementById("salesBody");
 
-    function fetchSales() {
+    async function fetchSales() {
         const formData = new FormData(form);
         const params = new URLSearchParams(formData).toString();
 
-        fetch("{{ route('sales.fetch') }}?" + params)
-            .then(res => res.json())
-            .then(data => {
-                salesBody.innerHTML = "";
-                if (data.sales.length > 0) {
-                    data.sales.forEach((sale) => {
-                        salesBody.innerHTML += `
-                            <tr>
-                                <td>${sale.id}</td>
-                                <td>${new Date(sale.created_at).toLocaleString()}</td>
-                                <td>${sale.customer_name ?? "N/A"}</td>
-                                <td>${sale.payment_method}</td>
-                                <td>${Number(sale.total).toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    salesBody.innerHTML = `<tr><td colspan="5" class="text-center">No sales found.</td></tr>`;
-                }
+        const res = await fetch("{{ route('sales.fetch') }}?" + params);
+        const data = await res.json();
+
+        salesBody.innerHTML = "";
+
+        if (data.sales && data.sales.length > 0) {
+            data.sales.forEach(sale => {
+                // Build product list HTML
+                let productsHtml = '';
+                sale.products.forEach(p => {
+                    productsHtml += `<div>${p.name} - Qty: ${p.quantity} - Price: ${Number(p.price).toFixed(2)} - Total: ${Number(p.total).toFixed(2)}</div>`;
+                });
+
+                // Payment methods
+                let paymentHtml = sale.payment_methods.join(', ');
+
+                salesBody.innerHTML += `
+                    <tr>
+                        <td>${sale.id}</td>
+                        <td>${sale.sale_date}</td>
+                        <td>${sale.user}</td>
+                        <td>${productsHtml}</td>
+                        <td>${paymentHtml}</td>
+                        <td>${Number(sale.total_amount).toFixed(2)}</td>
+                    </tr>
+                `;
             });
+        } else {
+            salesBody.innerHTML = `<tr><td colspan="6" class="text-center">No sales found.</td></tr>`;
+        }
     }
 
     // Fetch when form is submitted

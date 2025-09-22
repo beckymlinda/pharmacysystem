@@ -20,7 +20,7 @@ class Sale extends Model
         'sale_date',
     ];
 
-    /**
+    /**s
      * The sale items associated with this sale.
      */
     public function items()
@@ -38,6 +38,12 @@ class Sale extends Model
 
     protected $casts = [
     'sale_date' => 'datetime',
-];
+];          
+public function payments()
+{
+    return $this->hasMany(SalePayment::class);
+}
+ 
+
 
 }

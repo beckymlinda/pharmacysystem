@@ -51,34 +51,42 @@
 
 
     <table class="items">
-        <thead>
-            <tr>
-                <th style="text-align:left;">Item</th>
-                <th style="text-align:center;">Qty</th>
-                <th style="text-align:right;">Price</th>
-                <th style="text-align:right;">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($sale->items as $item)
-            <tr>
-                <td>{{ $item->product->name }}</td>
-                <td style="text-align:center;">{{ $item->quantity }}</td>
-                <td style="text-align:right;">{{ number_format($item->price,2) }}</td>
-                <td style="text-align:right;">{{ number_format($item->total,2) }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr class="total">
-                <td colspan="3" style="text-align:right;">Grand Total:</td>
-                <td style="text-align:right;">{{ number_format($sale->total_amount,2) }}</td>
-            </tr>
-            <tr>
-                <td colspan="4" class="small"><strong>Payment Method:</strong> {{ $sale->payment_method }}</td>
-            </tr>
-        </tfoot>
-    </table>
+    <thead>
+        <tr>
+            <th style="text-align:left;">Item</th>
+            <th style="text-align:center;">Qty</th>
+            <th style="text-align:right;">Price</th>
+            <th style="text-align:right;">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($sale->items as $item)
+        <tr>
+            <td>{{ $item->product->name }}</td>
+            <td style="text-align:center;">{{ $item->quantity }}</td>
+            <td style="text-align:right;">{{ number_format($item->price,2) }}</td>
+            <td style="text-align:right;">{{ number_format($item->total,2) }}</td>
+        </tr>
+        @endforeach
+    </tbody>
+    <tfoot>
+        <tr class="total">
+            <td colspan="3" style="text-align:right;">Grand Total:</td>
+            <td style="text-align:right;">{{ number_format($sale->total_amount,2) }}</td>
+        </tr>
+
+        {{-- Display all payments --}}
+        <tr>
+            <td colspan="4" class="small">
+                <strong>Payment Method(s):</strong>
+                @foreach($sale->payments as $payment)
+                    {{ $payment->method }}: {{ number_format($payment->amount,2) }}@if(!$loop->last), @endif
+                @endforeach
+            </td>
+        </tr>
+    </tfoot>
+</table>
+
 
     <div class="footer">
         <hr>

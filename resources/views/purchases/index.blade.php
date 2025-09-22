@@ -1,7 +1,19 @@
 <div class="container">
     <h3 class="mb-4">All Purchases</h3>
 
-    <a href="{{ route('purchases.create') }}" class="btn btn-primary mb-3 ajax-link" data-url="{{ route('purchases.create') }}">Record New Purchase</a>
+    @php
+        $totalPurchases = $purchases->sum('total_cost');
+    @endphp
+
+    <!-- Total Purchases Summary -->
+   <div class="mb-3">
+    <h5>Total Purchases: <span class="text-success">MK {{ number_format($totalPurchases, 2) }}</span></h5>
+</div>
+
+
+    <a href="{{ route('purchases.create') }}" class="btn btn-primary mb-3 ajax-link" data-url="{{ route('purchases.create') }}">
+        Record New Purchase
+    </a>
 
     <table class="table table-bordered table-striped">
         <thead>
@@ -41,19 +53,15 @@
                 <td>{{ number_format($purchase->price, 2) }}</td>
                 <td>{{ number_format($purchase->total_cost, 2) }}</td>
                 <td>{{ \Carbon\Carbon::parse($purchase->purchase_date)->format('d M Y') }}</td>
-                <td><a href="#" class="btn btn-sm btn-warning ajax-link" 
-   data-url="{{ route('purchases.edit', $purchase->id) }}">
-    Edit
-</a>
+                <td>
+                    <a href="#" class="btn btn-sm btn-warning ajax-link" data-url="{{ route('purchases.edit', $purchase->id) }}">Edit</a>
 
-    <form action="{{ route('purchases.destroy', $purchase->id) }}" 
-          method="POST" class="d-inline delete-form">
-        @csrf
-        @method('DELETE')
-        <button class="btn btn-sm btn-danger">Delete</button>
-    </form>
-</td>
-
+                    <form action="{{ route('purchases.destroy', $purchase->id) }}" method="POST" class="d-inline delete-form">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
             @endforeach
         </tbody>

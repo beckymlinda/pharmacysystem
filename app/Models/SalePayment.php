@@ -1,24 +1,23 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Expense extends Model
+class SalePayment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'date',
-        'category',
+        'sale_id',
+        'method',
         'amount',
-        'description',
-        'user_id'
     ];
 
-    // Relationship
-    public function user()
+    // Relationships
+    public function sale()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Sale::class);
     }
 }

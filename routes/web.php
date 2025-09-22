@@ -21,6 +21,8 @@ require __DIR__.'/auth.php';
  
  
 use App\Http\Controllers\ProductController;
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+
 Route::get('/products/check-low-stock', [ProductController::class, 'checkLowStock'])
     ->name('products.check-low-stock');
 Route::resource('products', ProductController::class)->middleware('auth');
@@ -48,10 +50,7 @@ use App\Http\Controllers\SaleController;
     // All Sales (for reports/admin)
     Route::get('/pos/saleslist', [SaleController::class, 'allSales'])->name('pos.saleslist');
 
-    // View a single sale
-    Route::get('/sales/{sale}', [SaleController::class, 'show'])->name('sales.show');
-
-});
+     });
 
 
 use App\Http\Controllers\ReportController;
@@ -64,6 +63,7 @@ Route::prefix('expenses')->group(function () {
     Route::get('/create', [ExpenseController::class, 'create'])->name('expenses.create');
     Route::post('/', [ExpenseController::class, 'store'])->name('expenses.store');
 });
+
 
  
  
@@ -81,4 +81,26 @@ Route::get('/products/check-low-stock', [ProductController::class, 'checkLowStoc
     ->name('products.check-low-stock');
     Route::get('/products/export/{type?}', [ProductController::class, 'export'])
     ->name('products.export');
-    
+ // routes/web.php  
+ 
+
+use App\Http\Controllers\UnitController;
+Route::get('/units/fetch', [UnitController::class, 'fetchUnits'])->name('units.fetch');
+Route::resource('units', UnitController::class)->except(['show']); // optionally remove show if unused
+ 
+
+Route::middleware('auth')->group(function () {
+    Route::get('/sales/all', [SaleController::class, 'allSales'])->name('sales.all');
+});
+Route::get('/sales/all', [SaleController::class, 'allSales'])->name('sales.all');
+Route::get('/sales/fetch', [SaleController::class, 'fetchSales'])->name('sales.fetch');
+Route::get('/sales', [SaleController::class, 'salesPage'])->name('sales.page');
+Route::get('/sales/fetch', [SaleController::class, 'fetchSales'])->name('sales.fetch');
+
+Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit_loss');
+ 
+Route::get('/products/search', [SaleController::class, 'searchProducts'])->name('products.search');
+Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
+// web.php
+Route::get('/products/adjust-stock', [ProductController::class, 'adjustStockPage'])->name('products.adjust-stock');
+Route::post('/products/adjust-stock', [ProductController::class, 'updateStock'])->name('products.update-stock');
