@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <title>Dashboard</title>
     <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons CDN -->
@@ -219,11 +220,13 @@
     <i class="bi bi-wallet2"></i> List Expenses
 </a>
 
- 
+ <li class="nav-item">
+    <a href="#" class="ajax-link" data-url="{{ route('stock.index') }}">
+        <i class="bi bi-box-seam"></i> Stock Management
+    </a>
+</li>
 
-<a href="#" class="ajax-link d-block mt-1" data-url="{{ route('products.adjust-stock') }}">
-    <i class="bi bi-exclamation-triangle"></i> Stock Adjustment
-</a>
+
     <a href="#"><i class="bi bi-bell"></i> Notifications</a>
     <a href="#"><i class="bi bi-gear"></i> Settings</a>
     <a href="#"><i class="bi bi-people"></i> User Management</a>
@@ -353,19 +356,49 @@
         </div>
     </div>
 </main>
+<!-- Adjust Stock Modal -->
+<div class="modal fade" id="adjustStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Adjust Stock</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="adjust-product-id">
+                <p id="adjust-product-name" class="fw-bold"></p>
 
+                <div class="mb-3">
+                    <label for="adjust-quantity" class="form-label">New Quantity to Add</label>
+                    <input type="number" class="form-control" id="adjust-quantity">
+                </div>
 
-    <!-- Bootstrap JS Bundle CDN (optional) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Chart.js CDN -->
+                <div class="mb-3">
+                    <label for="adjust-selling-price" class="form-label">Selling Price (MK)</label>
+                    <input type="number" class="form-control" id="adjust-selling-price" step="0.01">
+                </div>
+
+                <div id="adjust-stock-msg"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" id="adjust-stock-submit">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap 5 bundle (includes Popper + Modal JS) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+ 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+ 
 <!-- ✅ Use this older UMD version of jsPDF (browser-friendly) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 <!-- jQuery (CDN) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+ <script>
 $(document).on('click', '.ajax-link', function(e) {
     e.preventDefault();
 
@@ -522,6 +555,89 @@ $(document).on('click', '.ajax-link', function(e) {
 });
 </script>
 
+<script>
+$(document).ready(function() {
+    // ✅ Set CSRF token for all AJAX requests
+    $.ajaxSetup({
+        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+    });
 
+    // ✅ Open Adjust Stock Modal
+    $(document).on('click', '.adjust-stock-btn', function() {
+        const id = $(this).data('product-id');
+        const name = $(this).data('product-name');
+        const qty = $(this).data('current-qty');
+        const price = $(this).closest('tr').find('td').eq(3).text(); // get price from table
+
+        $('#adjust-product-id').val(id);
+$('#adjust-product-name').html(`
+    <span class="fw-bold text-dark">${name}</span> 
+    <br>
+    <span class="badge bg-primary">Current Stock: ${qty}</span> 
+    <span class="badge bg-success">Price: MK ${price}</span>
+`);
+        $('#adjust-quantity').val('');
+        $('#adjust-selling-price').val('');
+        $('#adjust-stock-msg').html('');
+let modalEl = document.getElementById('adjustStockModal');
+let modal = new bootstrap.Modal(modalEl);
+modal.show();
+
+    });
+
+    // ✅ Submit adjustment
+    $('#adjust-stock-submit').on('click', function() {
+        const productId = $('#adjust-product-id').val();
+        const qty = $('#adjust-quantity').val();
+        const sellingPrice = $('#adjust-selling-price').val();
+
+        // validation: at least one field must have input
+        if ((!qty || qty <= 0) && (!sellingPrice || sellingPrice <= 0)) {
+            $('#adjust-stock-msg').html('<div class="alert alert-danger">Enter a valid quantity or selling price.</div>');
+            return;
+        }
+
+        $.post(`/stock/${productId}/adjust`, { 
+            quantity: qty, 
+            selling_price: sellingPrice 
+        })
+        .done(function(res) {
+            $('#adjustStockModal').modal('hide');
+
+            let row = $(`tr[data-id="${productId}"]`);
+
+            // Update quantity in table
+            if (res.quantity !== undefined) {
+                row.find('td').eq(2).text(res.quantity);
+            }
+
+            // Update price in table if returned
+            if (res.selling_price !== undefined && res.selling_price !== null) {
+                row.find('td').eq(3).text(parseFloat(res.selling_price).toFixed(2));
+            }
+
+            showMessage('success', res.message);
+        })
+        .fail(function(xhr) {
+            let msg = xhr.responseJSON?.message ?? 'Failed to adjust stock';
+            $('#adjust-stock-msg').html(`<div class="alert alert-danger">${msg}</div>`);
+        });
+    });
+
+    // ✅ View product (if you use AJAX load)
+    $(document).on('click', '.view-product-btn', function() {
+        loadContent($(this).data('url'));
+    });
+
+    // ✅ Helper for global messages
+    function showMessage(type, text) {
+        const alertBox = $(`<div class="alert alert-${type} mt-2">${text}</div>`);
+        $('.container').prepend(alertBox);
+        setTimeout(() => { alertBox.fadeOut(500, () => alertBox.remove()); }, 3000);
+    }
+});
+</script>
+
+    
 </body>
 </html>

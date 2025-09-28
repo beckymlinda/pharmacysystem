@@ -84,8 +84,7 @@
 <tr>
     <th>Name</th>
     <th>Brand</th>
-    <th>Category</th>
-    <th>Qty</th>
+     <th>Qty</th>
     <th>Unit</th>
     <th>Alert Qty</th>
     <th>Order Price</th>
@@ -119,8 +118,7 @@
 <tr data-id="{{ $product->id }}">
     <td>{{ $product->name }}</td>
 <td>{{ $product->brand ?? '-' }}</td>
-<td>{{ $product->category ?? '-' }}</td>
-
+ 
 {{-- Quantity --}}
 <td class="{{ $isLow ? 'low-stock' : '' }}">{{ $product->quantity }}</td>
 
@@ -237,11 +235,7 @@
                         <input type="text" name="name" id="name" class="form-control" required>
                     </div>
 
-                    <!-- Category -->
-                    <div class="mb-3">
-                        <label for="category" class="form-label">Category</label>
-                        <input type="text" name="category" id="category" class="form-control">
-                    </div>
+                    
 
                     <!-- Unit Search -->
                     <div class="mb-3 position-relative">
@@ -757,8 +751,7 @@ $(document).on('submit', '#edit-product-form', function(e) {
                     <tr data-id="${product.id}">
                         <td>${product.name}</td>
                         <td>${product.brand ?? '-'}</td>
-                        <td>${product.category ?? '-'}</td>
-                        <td class="${isLow ? 'low-stock' : ''}">${product.quantity}</td>
+                         <td class="${isLow ? 'low-stock' : ''}">${product.quantity}</td>
                         <td>${product.unit?.short_name ?? '-'}</td>
                         <td>${product.alert_quantity ?? 0}</td>
                         <td>${parseFloat(product.order_price ?? 0).toFixed(2)}</td>

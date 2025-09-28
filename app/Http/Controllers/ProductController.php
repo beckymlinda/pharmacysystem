@@ -169,32 +169,7 @@ class ProductController extends Controller
         return redirect()->route('products.index');
     }
 
-    public function adjust(Request $request, Product $product)
-    {
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'selling_price' => 'nullable|numeric|min:0',
-        ]);
-
-        $product->quantity += $request->quantity;
-
-        if ($request->filled('selling_price')) {
-            $product->selling_price = $request->selling_price;
-        }
-
-        $product->save();
-
-        if ($request->ajax()) {
-            return response()->json([
-                'message' => 'Stock adjusted successfully',
-                'quantity' => $product->quantity,
-                'selling_price' => $product->selling_price,
-            ]);
-        }
-
-        return redirect()->route('products.index')
-                         ->with('success', 'Stock adjusted successfully.');
-    }
+ 
 
     public function checkLowStock()
     {
@@ -267,38 +242,7 @@ class ProductController extends Controller
 }
 
 // ProductController.php
-public function adjustStockPage()
-{
-    $products = Product::with('unit')->get();
-    return view('products.adjust_stock', compact('products'));
-}
-
-public function updateStock(Request $request)
-{
-    $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'adjustment' => 'required|integer',
-        'reason' => 'required|string|max:255',
-    ]);
-
-    $product = Product::find($request->product_id);
-    $product->quantity += $request->adjustment; // can be positive or negative
-    $product->save();
-
-    // Optional: log the adjustment
-    StockAdjustment::create([
-        'product_id' => $product->id,
-        'adjustment' => $request->adjustment,
-        'reason' => $request->reason,
-        'adjusted_by' => auth()->id(),
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Stock adjusted successfully',
-        'new_quantity' => $product->quantity
-    ]);
-}
-
+  
+ 
 
 }

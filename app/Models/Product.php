@@ -26,6 +26,17 @@ class Product extends Model
     protected $casts = [
         'expiry_date' => 'date',
     ];
+
+    protected $dates = ['expiry_date'];
+
+    // Accessor for formatted expiry date
+    
+
+    // Accessor for days until expiry
+    public function getDaysUntilExpiryAttribute()
+    {
+        return $this->expiry_date ? now()->diffInDays($this->expiry_date, false) : null;
+    }
     public function unit()
     {
         return $this->belongsTo(Unit::class);

@@ -101,6 +101,12 @@ Route::get('/reports/profit-loss', [ReportController::class, 'profitLoss'])->nam
  
 Route::get('/products/search', [SaleController::class, 'searchProducts'])->name('products.search');
 Route::get('/products/search', [ProductController::class, 'search'])->name('products.search');
-// web.php
-Route::get('/products/adjust-stock', [ProductController::class, 'adjustStockPage'])->name('products.adjust-stock');
-Route::post('/products/adjust-stock', [ProductController::class, 'updateStock'])->name('products.update-stock');
+
+use App\Http\Controllers\StockManagementController;
+
+Route::prefix('stock')->group(function() {
+    Route::get('/', [StockManagementController::class, 'index'])->name('stock.index');
+    Route::get('/{product}', [StockManagementController::class, 'show'])->name('stock.show');
+    Route::get('/{product}/edit', [StockManagementController::class, 'edit'])->name('stock.edit');
+    Route::post('/{product}/adjust', [StockManagementController::class, 'adjust'])->name('stock.adjust');
+});

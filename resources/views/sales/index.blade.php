@@ -21,14 +21,36 @@
         </div>
         <div class="card-body">
             <form id="filterForm" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Start Date</label>
-                    <input type="date" name="start_date" class="form-control">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">End Date</label>
-                    <input type="date" name="end_date" class="form-control">
-                </div>
+   
+<div class="col-md-3">
+    <label class="form-label">Date Range</label>
+    <select name="date_range" id="dateRange" class="form-select">
+        <option value="">-- Select Range --</option>
+        <option value="today">Today</option>
+        <option value="yesterday">Yesterday</option>
+        <option value="last_7_days">Last 7 Days</option>
+        <option value="last_30_days">Last 30 Days</option>
+        <option value="this_month">This Month</option>
+        <option value="last_month">Last Month</option>
+        <option value="this_month_last_year">This Month Last Year</option>
+        <option value="this_year">This Year</option>
+        <option value="last_year">Last Year</option>
+        <option value="current_financial_year">Current Financial Year</option>
+        <option value="last_financial_year">Last Financial Year</option>
+    </select>
+</div>
+
+{{-- Always visible custom range --}}
+<div class="col-md-3">
+    <label class="form-label">Custom Range (Start)</label>
+    <input type="date" name="start_date" class="form-control">
+</div>
+<div class="col-md-3">
+    <label class="form-label">Custom Range (End)</label>
+    <input type="date" name="end_date" class="form-control">
+</div>
+
+
                 <div class="col-md-3">
                     <label class="form-label">Seller</label>
                     <select name="seller_id" class="form-select">
@@ -195,4 +217,48 @@ $(document).off('click', '#clearFilter').on('click', '#clearFilter', function ()
         });
 });
 
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dateRange = document.getElementById('dateRange');
+    const customFields = document.querySelectorAll('.custom-range');
+
+    function toggleCustomFields() {
+        if (dateRange.value === 'custom') {
+            customFields.forEach(el => el.classList.remove('d-none'));
+        } else {
+            customFields.forEach(el => el.classList.add('d-none'));
+        }
+    }
+
+    // Initial check (in case "custom" was preselected)
+    toggleCustomFields();
+
+    // Change event
+    dateRange.addEventListener('change', toggleCustomFields);
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dateRange = document.getElementById('dateRange');
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+
+    function toggleDateInputs() {
+        if (dateRange.value === 'custom') {
+            startDate.disabled = false;
+            endDate.disabled = false;
+        } else {
+            startDate.disabled = true;
+            endDate.disabled = true;
+            startDate.value = "";
+            endDate.value = "";
+        }
+    }
+
+    // Run on load + on change
+    toggleDateInputs();
+    dateRange.addEventListener('change', toggleDateInputs);
+});
 </script>

@@ -7,7 +7,7 @@ use App\Models\Sale;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SaleItem;
-
+use Carbon\Carbon;
 class SaleController extends Controller
 {
     // Show POS form
@@ -97,12 +97,74 @@ public function salesPage()
 }
 
     // AJAX method to fetch sales
+
 public function fetchSales(Request $request)
 {
     $query = Sale::with(['items.product', 'payments', 'user']);
+    $today = Carbon::today();
 
-    // Date filter
-    if ($request->filled('start_date') && $request->filled('end_date')) {
+    // Priority: Predefined dropdown ranges
+    if ($request->filled('date_range')) {
+        switch ($request->date_range) {
+            case 'today':
+                $query->whereDate('sale_date', $today);
+                break;
+
+            case 'yesterday':
+                $query->whereDate('sale_date', $today->copy()->subDay());
+                break;
+
+            case 'last_7_days':
+                $query->whereBetween('sale_date', [$today->copy()->subDays(6), $today]);
+                break;
+
+            case 'last_30_days':
+                $query->whereBetween('sale_date', [$today->copy()->subDays(29), $today]);
+                break;
+
+            case 'this_month':
+                $query->whereMonth('sale_date', $today->month)
+                      ->whereYear('sale_date', $today->year);
+                break;
+
+            case 'last_month':
+                $lastMonth = $today->copy()->subMonth();
+                $query->whereMonth('sale_date', $lastMonth->month)
+                      ->whereYear('sale_date', $lastMonth->year);
+                break;
+
+            case 'this_month_last_year':
+                $query->whereMonth('sale_date', $today->month)
+                      ->whereYear('sale_date', $today->copy()->subYear()->year);
+                break;
+
+            case 'this_year':
+                $query->whereYear('sale_date', $today->year);
+                break;
+
+            case 'last_year':
+                $query->whereYear('sale_date', $today->copy()->subYear()->year);
+                break;
+
+            case 'current_financial_year':
+                $start = Carbon::createFromDate($today->year, 7, 1);
+                $end = $start->copy()->addYear()->subDay();
+                if ($today->lt($start)) {
+                    $start->subYear();
+                    $end->subYear();
+                }
+                $query->whereBetween('sale_date', [$start, $end]);
+                break;
+
+            case 'last_financial_year':
+                $start = Carbon::createFromDate($today->year - 1, 7, 1);
+                $end = $start->copy()->addYear()->subDay();
+                $query->whereBetween('sale_date', [$start, $end]);
+                break;
+        }
+    }
+    // Fallback: Custom range
+    elseif ($request->filled('start_date') && $request->filled('end_date')) {
         $query->whereBetween('sale_date', [
             $request->start_date,
             $request->end_date
@@ -114,7 +176,7 @@ public function fetchSales(Request $request)
         $query->where('user_id', $request->seller_id);
     }
 
-    // Payment method filter
+    // Payment filter
     if ($request->filled('payment_method')) {
         $query->whereHas('payments', function($q) use ($request) {
             $q->where('method', $request->payment_method);
@@ -122,8 +184,7 @@ public function fetchSales(Request $request)
     }
 
     $sales = $query->latest()->get();
-
-    return view('sales._table', compact('sales')); // partial reload
+    return view('sales._table', compact('sales'));
 }
 
 
